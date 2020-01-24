@@ -2,9 +2,11 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit, 
     QTextEdit, QGridLayout, QApplication,QTableWidget,QTableWidgetItem,QPushButton,QHBoxLayout,
-    QFileDialog)
+    QFileDialog,QErrorMessage,QMessageBox)
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QColor
+from pandas import read_excel
+from VIKOR import vikor
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -38,10 +40,12 @@ class BodyWindows(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         # create and set layout to place widgets
-        self.ROW = 4
+        self.ROW_Criteria = 0
+        self.tableData = []
+        self.excelData = []
         self.propertyWidget = PropertyWidget()
         # self.endButton = EndButton()
-        print(self.ROW)
+        print(self.ROW_Criteria)
         self.initUI()
 
     def initUI(self):
@@ -70,10 +74,10 @@ class BodyWindows(QtWidgets.QWidget):
         self.upload_file.clicked.connect(self.UploadData)
         self.upload_file.setEnabled(False)
 
-        start = QPushButton('Run', self)
-        start.setToolTip('Run It')
-        start.clicked.connect(self.run)
-        start.setEnabled(False)
+        self.start = QPushButton('Run', self)
+        self.start.setToolTip('Run It')
+        self.start.clicked.connect(self.run)
+        self.start.setEnabled(False)
 
         grid = QGridLayout()
         # grid.setSpacing(10)
@@ -88,7 +92,7 @@ class BodyWindows(QtWidgets.QWidget):
         grid.addWidget(self.propertyWidget, 3, 0)
         grid.addWidget(self.check_table,3,1)
         grid.addWidget(self.upload_file,4,0)
-        grid.addWidget(start,4,1)
+        grid.addWidget(self.start,4,1)
         
         
 
@@ -115,7 +119,7 @@ class BodyWindows(QtWidgets.QWidget):
         self.check_table.setEnabled(True)
         self.upload_file.setEnabled(True)
         self.propertyWidget.display(self.criterionEdit.text())
-        
+        self.ROW_Criteria = int(self.criterionEdit.text())
 
     @pyqtSlot()
     def on_click_clear(self):
@@ -142,34 +146,89 @@ class BodyWindows(QtWidgets.QWidget):
                     self.propertyWidget.tableWidget.setItem(row, column, QTableWidgetItem())
                     self.propertyWidget.tableWidget.item(row, column).setBackground(QColor(255,144,121))
                     dataNull.append(index)
-
-                
-                # We suppose data are strings
-                data[row].append(str(model.data(index)))
+                else :
+                    if model.data(index) in  dataNull : 
+                        dataNull.remove(model.data(index))
+                    # We suppose data are strings
+                    data[row].append(str(model.data(index)))
         #TODO: remove color cell 
         # for nulldata in dataNull  :
         #     if model.data(nulldata) != '' | None:
                 
         # self.propertyWidget.tableWidget.setRowCount(0)
         print(data)
+        if not  dataNull:
+            self.start.setEnabled(True)
+            self.tableData = data
+
     
     def UploadData(self):
         print('I am in UploadData')
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
+        files, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Excel Files (*.xlsx)", options=options)
         if files:
             print(files)
-    
-    def run(self):
-        print("I am in Run")
+            print(files.find('.xlsx'))
             
+            if files.find('.xlsx') !=-1 or files.find('.xls') !=-1:
 
+                excel_file = read_excel(files)
 
-    # def sync_lineEdit(self,text):
-    #     self.ROW = int(text)
-    #     print(self.ROW)
+                
+                if len(excel_file.columns) == self.ROW_Criteria : 
+                    
+                    
+                    self.excelData = excel_file.values
+                    print(type(self.excelData))
+                else:
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Critical)
+                    msg.setText("Error")
+                    msg.setInformativeText('Number of colums not equal with Criterions')
+                    msg.setWindowTitle("Error")
+                    msg.exec_()
+
+            else: 
+                print('eeeeerroor')
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Error")
+                msg.setInformativeText('Attach Excel file')
+                msg.setWindowTitle("Error")
+                msg.exec_()
+
+                
+            
+    def run(self):
+        print('run')
+        weights = []
+        min_max = [] 
+        for row in self.tableData:
+            weights.append(float(row[1]))
+            if row[2] == 'min' or row[2] == 'max' : 
+                min_max.append(row[2])
+            else : 
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Error")
+                msg.setInformativeText('in row {} ,column min/max just fill min or max'.format(row))
+                msg.setWindowTitle("Error")
+                msg.exec_()
+
+        # excel_Data
        
+        # weights
+        print('123: ',weights,min_max)
+
+        # criteria max/min
+        import numpy as np
+        vikor(np.asarray(self.excelData),np.asarray(min_max),np.asarray(weights),'y')
+        self.ShowResultPage()
+
+    def ShowResultPage(self):
+        self.Rpage = ResultPage()
+        self.Rpage.show()
 
 class PropertyWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -222,6 +281,21 @@ class PropertyWidget(QtWidgets.QWidget):
 #         button_clear.setToolTip('This is an example button')
 #         # button_clear.clicked.connect(self.on_click_clear)
 
+
+class ResultPage(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.title = "Result Page"
+        self.top = 100
+        self.left = 100
+        self.width = 680
+        self.height = 500
+        self.initUI()
+        
+
+    def initUI(self) : 
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
