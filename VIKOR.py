@@ -73,6 +73,8 @@ def vikor(a, b, c, pl):
         e = [i + 1 for i in range(a.shape[0])]
         plt.plot(e, s, 'p--', color = 'red', 
 			markeredgewidth = 2, markersize = 8)
+        plt.text(0.02, 0.5, '123', fontsize=14)
+
         plt.plot(e, r, '*--',  color = 'blue', 
 			markeredgewidth = 2, markersize=8)
         plt.plot(e, q, 'o--', color = 'green', 
@@ -82,11 +84,13 @@ def vikor(a, b, c, pl):
         plt.axis([0, a.shape[0] + 1, 0, 
 			max(maximum(maximum(s, r), q)) + 0.3])
         plt.title("VIKOR results")
+        text = "Alternatives \n s:{} \n r:{}\n q:{}".format(s,r,q)
         plt.xlabel("Alternatives")
         plt.legend(['S', 'R', 'Q'])
         plt.grid(True)
         plt.show()
-    return s, r, q
+        plt.savefig('test.png')
+    return s, r, q 
 
 # performances of the alternatives
 x = array([[8, 7, 2, 1], [5, 3, 7, 5], [7, 5, 6, 4],
@@ -100,10 +104,10 @@ crit_max_min = array(['max', 'max', 'max', 'max'])
 
 # final results
 start = timeit.default_timer()
-vikor(x, crit_max_min, w, 'n')
-stop = timeit.default_timer()
-print(stop - start)
-s, r, q = vikor(x, crit_max_min, w, 'y')
-print("S = ", s)
-print("R = ", r)
-print("Q = ", q)
+# vikor(x, crit_max_min, w, 'n')
+# stop = timeit.default_timer()
+# print(stop - start)
+# s, r, q = vikor(x, crit_max_min, w, 'y')
+# print("S = ", s)
+# print("R = ", r)
+# print("Q = ", q)

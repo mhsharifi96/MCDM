@@ -223,8 +223,11 @@ class BodyWindows(QtWidgets.QWidget):
 
         # criteria max/min
         import numpy as np
-        vikor(np.asarray(self.excelData),np.asarray(min_max),np.asarray(weights),'y')
-        self.ShowResultPage()
+        s ,r ,q  =vikor(np.asarray(self.excelData),np.asarray(min_max),np.asarray(weights),'y')
+        print("S = ", s)
+        print("R = ", r)
+        print("Q = ", q)
+        # self.ShowResultPage()
 
     def ShowResultPage(self):
         self.Rpage = ResultPage()
