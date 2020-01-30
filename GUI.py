@@ -48,9 +48,9 @@ class MainWindow(QtWidgets.QMainWindow):
                                     """ This program is free software: you can redistribute it and/or modify.
 This program is distributed in the hope that it will be useful.
 
-                                    Developer : Mohammad hossein sharifi
+                                    Developer: Mohammad hossein sharifi
                                     Email : mh.sh7676@gmail.com
-                                    Github :https://github.com/mhsharifi96/
+                                    Github:https://github.com/mhsharifi96/
 """
                                 )
 
