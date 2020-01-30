@@ -26,14 +26,34 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(close_action)
         # Edit menu
         edit_menu = bar.addMenu('Edit')
+        #Help menu
+        help_menu = bar.addMenu('Help')
+        About = QtWidgets.QAction('About', self)
+        help_menu.addAction(About)
+        About.triggered.connect(self.about)
+    
+        
+
         # adding actions to edit menu
-        undo_action = QtWidgets.QAction('Undo', self)
-        redo_action = QtWidgets.QAction('Redo', self)
-        edit_menu.addAction(undo_action)
-        edit_menu.addAction(redo_action)
+        # undo_action = QtWidgets.QAction('Undo', self)
+        # redo_action = QtWidgets.QAction('Redo', self)
+        # edit_menu.addAction(undo_action)
+        # edit_menu.addAction(redo_action)
 
         # use `connect` method to bind signals to desired behavior
         close_action.triggered.connect(self.close)
+    
+    def about(self):
+        QtWidgets.QMessageBox.about(self, "About",
+                                    """ This program is free software: you can redistribute it and/or modify.
+This program is distributed in the hope that it will be useful.
+
+                                    Developer : Mohammad hossein sharifi
+                                    Email : mh.sh7676@gmail.com
+                                    Github :https://github.com/mhsharifi96/
+"""
+                                )
+
 
 
 class BodyWindows(QtWidgets.QWidget):
